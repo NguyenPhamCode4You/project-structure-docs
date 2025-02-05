@@ -2,33 +2,36 @@
 
 ## 1. Folder Structures
 ```plaintext
-|- API.MasterData  
-|  |- Controllers // API controllers for this module (e.g., finance-related controllers)  
-|    |- InvoiceController.cs  
+|__ API.MasterData  
+|  |__ Controllers // API controllers for this module (e.g., finance-related controllers)  
+|    |__ InvoiceController.cs  
 
-|- Core.Business // Business logic layer, organized by module  
-|  |- Finance // Finance-related business logic  
-|     |- CreateInvoice.cs  
-|     |- SearchInvoices.cs  
-|     |- ... // Use explicit, verb-first function names following the CQRS pattern  
+|__ Core.Business // Business logic layer, organized by module  
+|  |__ Finance // Finance-related business logic  
+|     |__ CreateInvoice.cs  
+|     |__ SearchInvoices.cs  
+|     |__ ... // Use explicit, verb-first function names following the CQRS pattern  
 
-|- Core.Domain // Entities (database) and DTOs (frontend-related), module-based structure  
-|  |- Constants // Global constants  
-|     |- FinanceConstants.cs // Enums and constants for finance  
-|  |- FinanceData // Finance-related domain objects  
-|     |- Entities // Database entity definitions  
-|     |- Dtos // DTOs for business logic and controllers  
+|__ Core.Domain // Entities (database) and DTOs (frontend-related), module-based structure  
+|  |__ Constants // Global constants  
+|  |  |__ FinanceConstants.cs // Enums and constants for finance  
+|  |
+|  |__ FinanceData // Finance-related domain objects  
+|     |__ Entities // Database entity definitions  
+|     |__ Dtos // DTOs for business logic and controllers  
 
-|- Core.Infrastructure // Infrastructure and utilities  
-|  |- DbContext // Database management  
-|     |- DataContext.cs // EF Core DbContext, includes entities and migrations  
-|  |- MessageQueue // RabbitMQ utilities  
-|  |- MappingProfile.cs // Store the auto-mapper to transform between Entities & DTOs  
+|__ Core.Infrastructure // Infrastructure and utilities  
+|  |__ DbContext // Database management  
+|  |  |__ DataContext.cs // EF Core DbContext, includes entities and migrations  
+|  |
+|  |__ MessageQueue // RabbitMQ utilities  
+|  |__ MappingProfile.cs // Store the auto-mapper to transform between Entities & DTOs  
 
-|- ExternalClients // External system integrations  
-|  |- DADesk // Integration logic for DADesk  
-|     |- Setup.cs // `Configure` method for module installation  
-|  |- BusinessCentral // Integration logic for Business Central  
+|__ ExternalClients // External system integrations  
+|  |__ DADesk // Integration logic for DADesk  
+|  |  |__ Setup.cs // `Configure` method for module installation
+|  |
+|  |__ BusinessCentral // Integration logic for Business Central 
 ```
 
 Note:
