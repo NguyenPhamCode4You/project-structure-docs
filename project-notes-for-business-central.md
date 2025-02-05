@@ -1,52 +1,50 @@
-# Project Structure explained for Business Central and DA Desk modules
+# BVMS Project Structure
 
-## 1. Folder Structures
+## 1. Folder Structure
 ```plaintext
-|__ API.MasterData  
-|  |__ Controllers // API controllers for this module (e.g., finance-related controllers)  
+📦 BVMS-BE
+|
+|__📂 API.MasterData  
+|  |__📂 Controllers // API controllers for this module (e.g., finance-related controllers)  
 |    |__ InvoiceController.cs  
 
-|__ Core.Business // Business logic layer, organized by module  
-|  |__ Finance // Finance-related business logic  
+|__📂 Core.Business // Business logic layer, organized by module  
+|  |__📂 Finance // Finance-related business logic  
 |     |__ CreateInvoice.cs  
 |     |__ SearchInvoices.cs  
 |     |__ ... // Use explicit, verb-first function names following the CQRS pattern  
 
-|__ Core.Domain // Entities (database) and DTOs (frontend-related), module-based structure  
-|  |__ Constants // Global constants  
+|__📂 Core.Domain // Entities (database) and DTOs (frontend-related), module-based structure  
+|  |__📂 Constants // Global constants  
 |  |  |__ FinanceConstants.cs // Enums and constants for finance  
 |  |
-|  |__ FinanceData // Finance-related domain objects  
-|     |__ Entities // Database entity definitions  
-|     |__ Dtos // DTOs for business logic and controllers  
+|  |__📂 FinanceData // Finance-related domain objects  
+|     |__📂 Entities // Database entity definitions  
+|     |__📂 Dtos // DTOs for business logic and controllers  
 
-|__ Core.Infrastructure // Infrastructure and utilities  
-|  |__ DbContext // Database management  
+|__📂 Core.Infrastructure // Infrastructure and utilities  
+|  |__📂 DbContext // Database management  
 |  |  |__ DataContext.cs // EF Core DbContext, includes entities and migrations  
 |  |
-|  |__ MessageQueue // RabbitMQ utilities  
+|  |__📂 MessageQueue // RabbitMQ utilities  
 |  |__ MappingProfile.cs // Store the auto-mapper to transform between Entities & DTOs  
 
-|__ ExternalClients // External system integrations  
-|  |__ DADesk // Integration logic for DADesk  
+|__📂 ExternalClients // External system integrations  
+|  |__📂 DADesk // Integration logic for DADesk  
 |  |  |__ Setup.cs // `Configure` method for module installation
 |  |
-|  |__ BusinessCentral // Integration logic for Business Central 
+|  |__📂 BusinessCentral // Integration logic for Business Central 
 ```
 
-Note:
+## Note:
 - `MappingProfile.cs` should be used as much as possible instead of manual mapping in the business logics.
 - Each project in `ExternalClients` should have a `Setup.cs` file
 - `appsettings.json` should contains the new section to hold values for the new External Clients
 
-```C#
-public DbSet<RequestEntity> Requests { get; set; }
-```
-
 ## 2. Entities Design and Mapping
 Entity is the core principal data-structure that is migrated into DBs. Should be treated with care and follow the style of other entities.
 
-### 2.1 Inheritance
+## 2.1 Inheritance
 - Entity can be inherit from BaseEntity or TrackedEntity.
 - They will, by default, have auditable fields that are automatically filled by databases without needing for explicit codings, for example:
 ```C#
@@ -69,14 +67,14 @@ public class TrackedEntity
     public string? ModifiedById { get; set; }
 }
 ```
-Note: 
-- Do NOT to explicitly put values into these fields because `DbContext` will infer proper values (from user's token and system datetime).
+## Note:
+- Do NOT explicitly put values into these fields because `DbContext` will infer them automatically (from user's token and system datetime).
 
-### 2.2 DTOs Design
+## 2.2 DTOs Design
 - DTOs are used by both Business logics and FE (via controllers)
 - DTO can be similar or different from Entities.
-- Transform from DTOs to Entities and vice-versa should be handled by `MappingProfile.cs`
-- Usually contains 2 versions (can be more): `A Reduced Version` for returning values via Search APIs and a `Detailed Value` for the CRUD operations. For example:
+- Transformation from DTOs to Entities and vice-versa should be handled by `MappingProfile.cs`
+- Usually contains 2 versions: `A Reduced Version` for returning values via Search APIs and a `Detailed Value` for the CRUD operations. For example:
 
 ```C#
 public class ShipmentReducedDto : BaseDto
@@ -99,10 +97,10 @@ public class ShipmentDto : BaseDto
     public List<ShipmentPortDto> Ports { get; set; }
 }
 ```
-Note:
-- Sometime it is also useful to seperated the Detailed DTOs into `CreateDTO` and `UpdateDTO` if FE is limited on how much data they can input during the Create and Update phases.
+## Note:
+- Sometime it is also useful to separated the Detailed DTOs into `CreateDTO` and `UpdateDTO` if FE is limited on how much data they can input during the Create and Update phases.
 
-### 2.3 Auto Mapper
+## 2.3 Auto Mapper
 Then, specify the mapping profile for these entities-dtos
 
 ```C#
@@ -126,7 +124,7 @@ return await query
 ## 3. `DbContext` Design
 After entities is defined, they should be put into `DbContext.cs` for Database migration
 
-### Step 1: includes the Entities into DbSet
+## Step 1: includes the Entities into DbSet
 ```C#
 public class DataContext : IdentityDbContext<UserEntity, RoleEntity, string>
 {
@@ -142,7 +140,7 @@ public class DataContext : IdentityDbContext<UserEntity, RoleEntity, string>
     // New Entities Should go here
     ...
 ```
-### Step 2: Naming the table
+## Step 2: Naming the table
 Should contains the module named as pre-fix, for finance module it is `financedata`
 ```C#
 protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -157,7 +155,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 }
 ```
 
-### Step 3: Define the key and relationships
+## Step 3: Define the key and relationships
 For complex relationships and default values, should be explicitly defined.
 ```C#
 modelBuilder.Entity<EstimateProfitAndLossItemEntity>(entity =>
@@ -179,7 +177,8 @@ modelBuilder.Entity<EstimateProfitAndLossItemEntity>(entity =>
 });
 ```
 
-### Step 4: Migrations
+## Step 4: Migrations
+
 Commands to create a new Db migrations steps
 ```shell
 dotnet ef migrations add "SomeUniqueMigrationNameHere" -c DataContext
@@ -190,8 +189,8 @@ Then apply the migration
 dotnet ef database update -c DataContext
 ```
 
-Note:
-- Once the migrations has been applied, the scripts should be merged to dev as soon as possible
+## Note:
+- Once the migrations has been applied, the migration scripts should be merged to dev as soon as possible
 - Announce other teams who is also working on migrations to keep these scripts in sync, avoid conflict as much.
 
 
