@@ -37,7 +37,6 @@
 ```
 
 ## Note:
-- `MappingProfile.cs` should be used as much as possible instead of manual mapping in the business logics.
 - Each project in `ExternalClients` should have a `Setup.cs` file
 - `appsettings.json` should contains the new section to hold values for the new External Clients
 
