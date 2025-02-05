@@ -36,16 +36,15 @@
 |  |__📂 BusinessCentral // Integration logic for Business Central 
 ```
 
-## Note:
-- Each project in `ExternalClients` should have a `Setup.cs` file
-- `appsettings.json` should contains the new section to hold values for the new External Clients
+## 2. Data Structure Design
+Entities and DTOs are the core principal data-structure that got migrated into DBs. Should be treated with care and follow coding style of others.
 
-## 2. Entities Design and Mapping
-Entity is the core principal data-structure that is migrated into DBs. Should be treated with care and follow the style of other entities.
+## 2.1 Entities
+- Entity hold the fields of a single Table of the DB.
+- Entity can be inherit from `BaseEntity` or `TrackedEntity`.
+- When inherited, by default, they will have auditable fields that are automatically filled by databases.
 
-## 2.1 Inheritance
-- Entity can be inherit from BaseEntity or TrackedEntity.
-- They will, by default, have auditable fields that are automatically filled by databases without needing for explicit codings, for example:
+For example:
 ```C#
 public class BaseEtsEventEntity : TrackedEntity
 {
@@ -64,16 +63,16 @@ public class TrackedEntity
     public string? CreatedById { get; set; }
     public DateTime? ModifiedOn { get; set; }
     public string? ModifiedById { get; set; }
+    ...
 }
 ```
 ## Note:
-- Do NOT explicitly put values into these fields because `DbContext` will infer them automatically (from user's token and system datetime).
+- Do NOT explicitly put values into these audit-fields because `DbContext` will infer them automatically (from user's token and system datetime).
 
-## 2.2 DTOs Design
+## 2.2 DTOs
 - DTOs are used by both Business logics and FE (via controllers)
-- DTO can be similar or different from Entities.
 - Transformation from DTOs to Entities and vice-versa should be handled by `MappingProfile.cs`
-- Usually contains 2 versions: `A Reduced Version` for returning values via Search APIs and a `Detailed Value` for the CRUD operations. For example:
+- Usually contains 2 versions: `A Reduced Version` for Search APIs and a `Detailed Version` for the CRUD APIs. For example:
 
 ```C#
 public class ShipmentReducedDto : BaseDto
@@ -96,10 +95,8 @@ public class ShipmentDto : BaseDto
     public List<ShipmentPortDto> Ports { get; set; }
 }
 ```
-## Note:
-- Sometime it is also useful to separated the Detailed DTOs into `CreateDTO` and `UpdateDTO` if FE is limited on how much data they can input during the Create and Update phases.
 
-## 2.3 Auto Mapper
+## 2.3 Auto-Mapper
 Then, specify the mapping profile for these entities-dtos
 
 ```C#
@@ -119,11 +116,13 @@ return await query
     .ToPagedResultAsync(request.SearchParams.CurrentPage, request.SearchParams.PageSize);
 ```
 
+## Note:
+- `MappingProfile.cs` should be used as much as possible to avoid lengthy mapping in the Business Logics
 
-## 3. `DbContext` Design
-After entities is defined, they should be put into `DbContext.cs` for Database migration
+## 3. `DbContext`
+After entities are defined, they should be put into `DbContext.cs` for Database migration.
 
-## Step 1: includes the Entities into DbSet
+### Step 1: Includes the Entities into DbContext using DbSet
 ```C#
 public class DataContext : IdentityDbContext<UserEntity, RoleEntity, string>
 {
@@ -139,7 +138,7 @@ public class DataContext : IdentityDbContext<UserEntity, RoleEntity, string>
     // New Entities Should go here
     ...
 ```
-## Step 2: Naming the table
+### Step 2: Naming the table with a module name prefix
 Should contains the module named as pre-fix, for finance module it is `financedata`
 ```C#
 protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -154,7 +153,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 }
 ```
 
-## Step 3: Define the key and relationships
+## Step 3: Define the default values and relationships
 For complex relationships and default values, should be explicitly defined.
 ```C#
 modelBuilder.Entity<EstimateProfitAndLossItemEntity>(entity =>
@@ -176,7 +175,7 @@ modelBuilder.Entity<EstimateProfitAndLossItemEntity>(entity =>
 });
 ```
 
-## Step 4: Migrations
+## Step 4: Apply Migrations using cmd
 
 Commands to create a new Db migrations steps
 ```shell
@@ -192,12 +191,6 @@ dotnet ef database update -c DataContext
 - Once the migrations has been applied, the migration scripts should be merged to dev as soon as possible
 - Announce other teams who is also working on migrations to keep these scripts in sync, avoid conflict as much.
 
-
-
-
-
-
-
-
-
-
+<p align="left">
+  <a href="#top">⬆️ Back to Top</a>
+</p>
