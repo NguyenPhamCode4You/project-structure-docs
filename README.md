@@ -1,5 +1,8 @@
 # BVMS Project Structure
 
+## Source Map
+![Source Map](./sourcemap-v1.png)
+
 ## 1. Folder Structure
 ```plaintext
 📦 BVMS-BE
